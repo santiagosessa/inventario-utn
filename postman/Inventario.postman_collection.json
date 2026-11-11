@@ -9,7 +9,23 @@
       "value": "http://127.0.0.1:3000"
     },
     {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "contrasena",
+      "value": "Prueba Postman 12345"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
       "key": "productoId",
+      "value": ""
+    },
+    {
+      "key": "proveedorId",
       "value": ""
     }
   ],
@@ -35,7 +51,7 @@
       ]
     },
     {
-      "name": "Crear producto",
+      "name": "Rechazar escritura sin JWT",
       "request": {
         "method": "POST",
         "url": "{{baseUrl}}/api/productos",
@@ -47,7 +63,201 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4500.5\n}"
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registrar cuenta de prueba",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/registro",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"contrasena\": \"{{contrasena}}\",\n  \"nombre\": \"Cuenta Postman\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('email', pm.variables.replaceIn('{{$guid}}') + '@example.test');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 201', () => pm.response.to.have.status(201));",
+              "pm.test('Devuelve un JWT y su vigencia', () => { const r = pm.response.json(); pm.expect(r.token).to.be.a('string'); pm.expect(r.expiraEn).to.eql(3600); });",
+              "pm.test('El perfil omite las credenciales', () => pm.expect(Object.keys(pm.response.json().usuario).sort()).to.eql(['email', 'id', 'nombre']));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingresar y guardar el JWT",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/auth/login",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('token', pm.response.json().token);",
+              "pm.test('El perfil corresponde a la cuenta registrada', () => pm.expect(pm.response.json().usuario.email).to.eql(pm.collectionVariables.get('email')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar la sesión",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/auth/sesion",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('La sesión devuelve el usuario', () => pm.expect(pm.response.json().usuario.nombre).to.eql('Cuenta Postman'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear proveedor",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/proveedores",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Distribuidora de prueba\",\n  \"ciudad\": \"Buenos Aires\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 201', () => pm.response.to.have.status(201));",
+              "const proveedor = pm.response.json();",
+              "pm.collectionVariables.set('proveedorId', proveedor.id);",
+              "pm.test('Proveedor activo', () => pm.expect(proveedor.archivado).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actualizar proveedor",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Distribuidora de prueba\",\n  \"ciudad\": \"Córdoba\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('La ciudad se actualiza', () => pm.expect(pm.response.json().ciudad).to.eql('Córdoba'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear producto relacionado",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/productos",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Cuaderno [A5] de prueba\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4500.5,\n  \"proveedorId\": \"{{proveedorId}}\"\n}"
         }
       },
       "event": [
@@ -60,6 +270,7 @@
               "const producto = pm.response.json();",
               "pm.collectionVariables.set('productoId', producto.id);",
               "pm.test('Aplica stock por defecto', () => pm.expect(producto.stock).to.eql(0));",
+              "pm.test('Devuelve el proveedor relacionado', () => pm.expect(producto.proveedor.id).to.eql(pm.collectionVariables.get('proveedorId')));",
               "pm.test('Informa ubicación', () => pm.expect(pm.response.headers.get('Location')).to.eql('/api/productos/' + producto.id));"
             ]
           }
@@ -87,7 +298,47 @@
       ]
     },
     {
-      "name": "Consultar por ID",
+      "name": "Buscar, filtrar y paginar",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos?q=%5Ba5%5D&categoria=Librer%C3%ADa&proveedorId={{proveedorId}}&pagina=1&limite=1",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "const r = pm.response.json();",
+              "pm.test('La página contiene el producto esperado', () => { pm.expect(r).to.include({ pagina: 1, limite: 1, total: 1, paginas: 1 }); pm.expect(r.datos[0].id).to.eql(pm.collectionVariables.get('productoId')); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazar paginación inválida",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos?limite=0",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar producto por ID",
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/api/productos/{{productoId}}",
@@ -113,13 +364,17 @@
         "url": "{{baseUrl}}/api/productos/{{productoId}}",
         "header": [
           {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
             "key": "Content-Type",
             "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4800,\n  \"stock\": 12\n}"
+          "raw": "{\n  \"nombre\": \"Cuaderno [A5] de prueba\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4800,\n  \"proveedorId\": \"{{proveedorId}}\",\n  \"stock\": 12\n}"
         }
       },
       "event": [
@@ -142,13 +397,17 @@
         "url": "{{baseUrl}}/api/productos",
         "header": [
           {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
             "key": "Content-Type",
             "value": "application/json"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": -1\n}"
+          "raw": "{\n  \"nombre\": \"Cuaderno [A5] de prueba\",\n  \"categoria\": \"Librería\",\n  \"precio\": -1,\n  \"proveedorId\": \"{{proveedorId}}\"\n}"
         }
       },
       "event": [
@@ -184,11 +443,79 @@
       ]
     },
     {
+      "name": "Archivar proveedor",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirmar que el proveedor se archivó",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/proveedores/{{proveedorId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conservar la referencia al proveedor archivado",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('Conserva el proveedor archivado', () => pm.expect(pm.response.json().proveedor).to.include({ id: pm.collectionVariables.get('proveedorId'), archivado: true }));"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Eliminar producto",
       "request": {
         "method": "DELETE",
         "url": "{{baseUrl}}/api/productos/{{productoId}}",
-        "header": []
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ]
       },
       "event": [
         {
@@ -216,7 +543,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Estado 404', () => pm.response.to.have.status(404));"
+              "pm.test('Estado 404', () => pm.response.to.have.status(404));",
+              "pm.collectionVariables.unset('token');"
             ]
           }
         }

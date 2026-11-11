@@ -4,15 +4,20 @@
   "private": true,
   "description": "Trabajo práctico integrador de Node.js. API REST para un catálogo de productos.",
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js",
     "dev": "node --watch --env-file-if-exists=.env server.js",
     "dev:web": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "test": "node --env-file-if-exists=.env --test"
   },
   "dependencies": {
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.4",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

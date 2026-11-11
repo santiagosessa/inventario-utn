@@ -9,7 +9,7 @@ export function manejarError(error, _req, res, next) {
   }
   if (error.name === 'ValidationError') {
     const campos = Object.fromEntries(Object.entries(error.errors).map(([campo, detalle]) => [campo, detalle.message]));
-    return res.status(400).json({ error: 'Revisá los datos del producto.', campos });
+    return res.status(400).json({ error: 'Revisá los datos enviados.', campos });
   }
   if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'El JSON es inválido.' });
   if (error.status === 413) return res.status(413).json({ error: 'El cuerpo de la solicitud supera los 16 KB.' });

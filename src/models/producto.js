@@ -8,6 +8,7 @@ const esquema = new mongoose.Schema({
     validator: Number.isSafeInteger,
     message: 'El stock debe ser un número entero.',
   } },
+  proveedor: { type: mongoose.Schema.Types.ObjectId, ref: 'Proveedor', default: null, index: true },
 }, { timestamps: true, versionKey: false, bufferCommands: false });
 
 export default mongoose.model('Producto', esquema);

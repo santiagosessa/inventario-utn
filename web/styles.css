@@ -8,20 +8,33 @@
 * { box-sizing: border-box; }
 body { margin: 0; }
 h1, h2, p { margin: 0; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 
 .contenedor { width: min(1120px, calc(100% - 2.5rem)); margin-inline: auto; }
 .cabecera { background: #173b2e; color: white; border-bottom: 4px solid #85b69b; }
 .cabecera-contenido { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; padding-block: 2.4rem; }
 h1 { font-size: clamp(1.7rem, 4vw, 2.6rem); letter-spacing: -.045em; }
 .cabecera a { color: #e1f5e9; text-underline-offset: .25rem; }
+.acciones-cabecera { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem; }
+.perfil { color: #e1f5e9; overflow-wrap: anywhere; }
 .contenido { padding-block: 2.2rem; }
 .paneles { display: grid; grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); gap: 1.4rem; align-items: start; }
 .panel { background: white; border: 1px solid #d9e4dc; border-radius: 14px; overflow: hidden; }
+.secciones { display: flex; gap: .5rem; margin-bottom: 1.1rem; }
+.secciones button[aria-current] { background: #e1f2e7; border-color: #5b8c71; }
+.acceso { padding: 1.25rem; max-width: 28rem; margin-bottom: 1.4rem; }
+.acceso .mensaje { margin-top: .85rem; }
+.encabezado-seccion { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.acceso-formulario { margin-top: 1rem; }
 .panel-titulo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; padding: 1.25rem; }
 h2 { font-size: 1.22rem; letter-spacing: -.02em; }
 .cantidad { color: #465e51; font-size: .88rem; }
 .vacio { padding: 1.4rem 1.25rem 2rem; border-top: 1px solid #e0e9e2; color: #465e51; }
+.vacio button { margin-top: .5rem; }
+.filtros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; padding: 0 1.25rem 1.25rem; }
+.filtros .acciones { grid-column: 1 / -1; }
+.paginacion { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; justify-content: center; padding: 1rem; border-top: 1px solid #e0e9e2; }
+.paginacion span { font-size: .9rem; color: #465e51; }
 .tabla-scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; text-align: left; }
 th, td { padding: .85rem; border-top: 1px solid #e0e9e2; }
@@ -36,7 +49,7 @@ small { display: block; font-weight: 400; color: #465e51; margin-top: .2rem; }
 fieldset { border: 0; margin: 1.1rem 0 0; padding: 0; min-width: 0; display: grid; gap: .9rem; }
 .fila-campos { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
 label { display: grid; gap: .35rem; font-weight: 600; font-size: .9rem; }
-input { width: 100%; min-width: 0; padding: .65rem; border: 1px solid #a9baaf; border-radius: 7px; color: inherit; }
+input, select { width: 100%; min-width: 0; padding: .65rem; border: 1px solid #a9baaf; border-radius: 7px; color: inherit; background: white; }
 button { color: #173b2e; background: white; border: 1px solid #a9baaf; padding: .6rem .8rem; border-radius: 7px; cursor: pointer; font-weight: 600; }
 button:hover:enabled { background: #edf5ef; }
 button.primario { background: #206146; color: white; border-color: #206146; }
@@ -54,4 +67,8 @@ button:disabled { opacity: .55; cursor: default; }
 
 @media (max-width: 800px) {
   .paneles { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 460px) {
+  .filtros { grid-template-columns: minmax(0, 1fr); }
 }
