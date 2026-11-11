@@ -1,0 +1,226 @@
+{
+  "info": {
+    "name": "Inventario UTN",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3000"
+    },
+    {
+      "key": "productoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Bienvenida",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('Expone la ruta de productos', () => pm.expect(pm.response.json().productos).to.eql('/api/productos'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Crear producto",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/productos",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4500.5\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 201', () => pm.response.to.have.status(201));",
+              "const producto = pm.response.json();",
+              "pm.collectionVariables.set('productoId', producto.id);",
+              "pm.test('Aplica stock por defecto', () => pm.expect(producto.stock).to.eql(0));",
+              "pm.test('Informa ubicación', () => pm.expect(pm.response.headers.get('Location')).to.eql('/api/productos/' + producto.id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar productos",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('Incluye el producto creado', () => pm.expect(pm.response.json().some(p => p.id === pm.collectionVariables.get('productoId'))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar por ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve el ID solicitado', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('productoId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actualizar producto",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": 4800,\n  \"stock\": 12\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+              "pm.test('Actualiza precio y stock', () => pm.expect(pm.response.json()).to.include({ precio: 4800, stock: 12 }));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazar datos inválidos",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/productos",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Cuaderno A5\",\n  \"categoria\": \"Librería\",\n  \"precio\": -1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 400', () => pm.response.to.have.status(400));",
+              "pm.test('Informa el campo precio', () => pm.expect(pm.response.json().campos).to.have.property('precio'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazar ID inválido",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/invalido",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Eliminar producto",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 204', () => pm.response.to.have.status(204));",
+              "pm.test('Cuerpo vacío', () => pm.expect(pm.response.text()).to.eql(''));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirmar que el producto ya no existe",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Estado 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

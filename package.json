@@ -1,0 +1,23 @@
+{
+  "name": "inventario-utn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trabajo práctico integrador de Node.js. API REST para un catálogo de productos.",
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "dev:web": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}
